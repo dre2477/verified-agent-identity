@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" fill="none">
+  <rect width="1200" height="630" fill="#1a1a2e"/>
+  <rect x="0" y="0" width="1200" height="4" fill="#c9a84c"/>
+  <rect x="200" y="160" width="360" height="300" rx="16" fill="#252542" stroke="#c9a84c" stroke-width="2"/>
+  <rect x="640" y="160" width="360" height="300" rx="16" fill="#1f1f38" stroke="#444466" stroke-width="2"/>
+  <text x="380" y="300" font-family="Georgia, serif" font-size="48" fill="#c9a84c" text-anchor="middle" dominant-baseline="middle">✍</text>
+  <text x="380" y="370" font-family="Georgia, serif" font-size="20" fill="#f5f0e8" text-anchor="middle" opacity="0.7">Human Writer</text>
+  <text x="820" y="300" font-family="Georgia, serif" font-size="48" fill="#666699" text-anchor="middle" dominant-baseline="middle">🤖</text>
+  <text x="820" y="370" font-family="Georgia, serif" font-size="20" fill="#666699" text-anchor="middle" opacity="0.7">AI Generator</text>
+  <text x="600" y="530" font-family="Georgia, serif" font-size="22" fill="#c9a84c" text-anchor="middle" opacity="0.6">Articles · The Ink Bureau</text>
+</svg>
