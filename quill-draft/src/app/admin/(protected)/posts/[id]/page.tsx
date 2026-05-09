@@ -8,7 +8,7 @@ import type { Category, Post } from "@/lib/supabase/types";
 
 const TipTapEditor = nextDynamic(() => import("@/components/admin/TipTapEditor"), { ssr: false });
 
-const BUCKET = "post-images";
+const BUCKET = "images";
 const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/webp", "image/gif"];
 const MAX_SIZE = 5 * 1024 * 1024;
 

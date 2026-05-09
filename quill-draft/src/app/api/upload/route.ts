@@ -3,8 +3,7 @@ import { createAdminClient } from "@/lib/supabase/server";
 
 export async function POST(req: Request) {
   const supabase = createAdminClient();
-  const { searchParams } = new URL(req.url);
-  const bucket = searchParams.get("bucket") === "images" ? "images" : "post-images";
+  const bucket = "images";
 
   const formData = await req.formData();
   const file = formData.get("file") as File | null;

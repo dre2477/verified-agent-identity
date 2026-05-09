@@ -17,7 +17,7 @@ const cardStyle = {
 // ─── Upload helper ─────────────────────────────────────────────────────────────
 async function uploadImage(
   file: File,
-  bucket: "images" | "post-images" = "images"
+  bucket: "images" = "images"
 ): Promise<string | null> {
   const formData = new FormData();
   formData.append("file", file);
