@@ -20,6 +20,6 @@ export function truncate(str: string, n: number): string {
   return plain.length > n ? plain.slice(0, n).trim() + "…" : plain;
 }
 
-export const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://thequilldraft.netlify.app";
+export const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://the-quill-draft.netlify.app";
 export const SITE_NAME = "The Quill Draft";
 export const SITE_TAGLINE = "Where Curiosity Meets Craft";
