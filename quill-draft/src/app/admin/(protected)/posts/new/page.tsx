@@ -61,6 +61,7 @@ export default function NewPostPage() {
   };
 
   const inputStyle = { backgroundColor: "rgba(255,255,255,0.07)", border: "1px solid rgba(201,168,76,0.25)", color: "#f5f0e8" };
+  const selectStyle = { backgroundColor: "#2d2d50", border: "1px solid rgba(201,168,76,0.4)", color: "#f5f0e8" };
 
   return (
     <div className="max-w-5xl">
@@ -106,9 +107,9 @@ export default function NewPostPage() {
           <div className="rounded-xl p-5" style={{ backgroundColor: "rgba(255,255,255,0.04)", border: "1px solid rgba(201,168,76,0.15)" }}>
             <h3 className="text-sm font-bold mb-3" style={{ color: "#c9a84c" }}>Status</h3>
             <select value={status} onChange={e => setStatus(e.target.value as "draft" | "published")}
-              className="w-full px-3 py-2 rounded-lg text-sm outline-none" style={inputStyle}>
-              <option value="draft">Draft</option>
-              <option value="published">Published</option>
+              className="w-full px-3 py-2 rounded-lg text-sm outline-none" style={selectStyle}>
+              <option value="draft" style={{ backgroundColor: "#2d2d50" }}>Draft</option>
+              <option value="published" style={{ backgroundColor: "#2d2d50" }}>Published</option>
             </select>
           </div>
 
@@ -116,13 +117,13 @@ export default function NewPostPage() {
           <div className="rounded-xl p-5" style={{ backgroundColor: "rgba(255,255,255,0.04)", border: "1px solid rgba(201,168,76,0.15)" }}>
             <h3 className="text-sm font-bold mb-3" style={{ color: "#c9a84c" }}>Category</h3>
             <select value={categoryId} onChange={e => setCategoryId(e.target.value)}
-              className="w-full px-3 py-2 rounded-lg text-sm outline-none" style={inputStyle}>
-              <option value="">— Select a category —</option>
+              className="w-full px-3 py-2 rounded-lg text-sm outline-none" style={selectStyle}>
+              <option value="" style={{ backgroundColor: "#2d2d50" }}>— Select a category —</option>
               {categories.length === 0 ? (
-                <option disabled>No categories yet — create one first</option>
+                <option disabled style={{ backgroundColor: "#2d2d50" }}>No categories yet — create one first</option>
               ) : (
                 categories.map(cat => (
-                  <option key={cat.id} value={cat.id}>{cat.name}</option>
+                  <option key={cat.id} value={cat.id} style={{ backgroundColor: "#2d2d50" }}>{cat.name}</option>
                 ))
               )}
             </select>

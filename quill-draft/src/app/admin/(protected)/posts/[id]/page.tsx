@@ -84,6 +84,7 @@ export default function EditPostPage({ params }: { params: { id: string } }) {
   };
 
   const inputStyle = { backgroundColor: "rgba(255,255,255,0.07)", border: "1px solid rgba(201,168,76,0.25)", color: "#f5f0e8" };
+  const selectStyle = { backgroundColor: "#2d2d50", border: "1px solid rgba(201,168,76,0.4)", color: "#f5f0e8" };
 
   if (!post) return <div className="text-sm py-10 text-center" style={{ color: "rgba(245,240,232,0.4)" }}>Loading post…</div>;
 
@@ -139,13 +140,13 @@ export default function EditPostPage({ params }: { params: { id: string } }) {
           <div className="rounded-xl p-5" style={{ backgroundColor: "rgba(255,255,255,0.04)", border: "1px solid rgba(201,168,76,0.15)" }}>
             <h3 className="text-sm font-bold mb-3" style={{ color: "#c9a84c" }}>Category</h3>
             <select value={categoryId} onChange={e => setCategoryId(e.target.value)}
-              className="w-full px-3 py-2 rounded-lg text-sm outline-none" style={inputStyle}>
-              <option value="">— Select a category —</option>
+              className="w-full px-3 py-2 rounded-lg text-sm outline-none" style={selectStyle}>
+              <option value="" style={{ backgroundColor: "#2d2d50" }}>— Select a category —</option>
               {categories.length === 0 ? (
-                <option disabled>No categories yet — create one first</option>
+                <option disabled style={{ backgroundColor: "#2d2d50" }}>No categories yet — create one first</option>
               ) : (
                 categories.map(cat => (
-                  <option key={cat.id} value={cat.id}>{cat.name}</option>
+                  <option key={cat.id} value={cat.id} style={{ backgroundColor: "#2d2d50" }}>{cat.name}</option>
                 ))
               )}
             </select>
