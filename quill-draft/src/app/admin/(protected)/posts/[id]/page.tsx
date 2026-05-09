@@ -1,13 +1,20 @@
 "use client";
 export const dynamic = "force-dynamic";
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import Link from "next/link";
 import nextDynamic from "next/dynamic";
+import { createBrowserClient } from "@/lib/supabase/client";
 import type { Category, Post } from "@/lib/supabase/types";
 
 const TipTapEditor = nextDynamic(() => import("@/components/admin/TipTapEditor"), { ssr: false });
 
+const BUCKET = "post-images";
+const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/webp", "image/gif"];
+const MAX_SIZE = 5 * 1024 * 1024;
+
 export default function EditPostPage({ params }: { params: { id: string } }) {
+  const supabase = useMemo(() => createBrowserClient(), []);
+
   const [post, setPost] = useState<Post | null>(null);
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
@@ -46,19 +53,31 @@ export default function EditPostPage({ params }: { params: { id: string } }) {
     setUploadError("");
     setSelectedFile({ name: file.name, size: (file.size / 1024).toFixed(1) + " KB" });
     setUploadingImage(true);
-    const formData = new FormData();
-    formData.append("file", file);
-    try {
-      const res = await fetch("/api/upload", { method: "POST", body: formData });
-      const data = await res.json();
-      if (res.ok) {
-        setFeaturedImage(data.url);
-        setSelectedFile(null);
-      } else {
-        setUploadError(data.error ?? `Upload failed (HTTP ${res.status})`);
-      }
-    } catch (err) {
-      setUploadError("Network error — could not reach upload endpoint. " + String(err));
+
+    if (!ALLOWED_TYPES.includes(file.type)) {
+      setUploadError("Invalid file type. Only JPEG, PNG, WebP, and GIF are allowed.");
+      setUploadingImage(false);
+      return;
+    }
+    if (file.size > MAX_SIZE) {
+      setUploadError("File too large. Maximum size is 5MB.");
+      setUploadingImage(false);
+      return;
+    }
+
+    const ext = file.name.split(".").pop() ?? "jpg";
+    const fileName = `${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+
+    const { error: uploadErr } = await supabase.storage
+      .from(BUCKET)
+      .upload(fileName, file, { contentType: file.type, upsert: false });
+
+    if (uploadErr) {
+      setUploadError(uploadErr.message);
+    } else {
+      const { data: { publicUrl } } = supabase.storage.from(BUCKET).getPublicUrl(fileName);
+      setFeaturedImage(publicUrl);
+      setSelectedFile(null);
     }
     setUploadingImage(false);
   };
@@ -73,9 +92,7 @@ export default function EditPostPage({ params }: { params: { id: string } }) {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        title,
-        content,
-        excerpt,
+        title, content, excerpt,
         featured_image_url: featuredImage,
         category_id: categoryId,
         status: saveStatus ?? status,
@@ -139,11 +156,10 @@ export default function EditPostPage({ params }: { params: { id: string } }) {
         <div className="space-y-5">
           <div className="rounded-xl p-5" style={{ backgroundColor: "rgba(255,255,255,0.04)", border: "1px solid rgba(201,168,76,0.15)" }}>
             <h3 className="text-sm font-bold mb-1" style={{ color: "#c9a84c" }}>Status</h3>
-            <span className="text-xs px-2.5 py-1 rounded-full"
-              style={{
-                backgroundColor: status === "published" ? "rgba(34,197,94,0.15)" : "rgba(234,179,8,0.15)",
-                color: status === "published" ? "#86efac" : "#fde047",
-              }}>
+            <span className="text-xs px-2.5 py-1 rounded-full" style={{
+              backgroundColor: status === "published" ? "rgba(34,197,94,0.15)" : "rgba(234,179,8,0.15)",
+              color: status === "published" ? "#86efac" : "#fde047",
+            }}>
               {status}
             </span>
           </div>
@@ -183,13 +199,11 @@ export default function EditPostPage({ params }: { params: { id: string } }) {
                 ✗ {uploadError}
               </div>
             )}
-
             {selectedFile && !uploadingImage && (
               <div className="mb-3 px-3 py-2 rounded-lg text-xs" style={{ backgroundColor: "rgba(201,168,76,0.1)", border: "1px solid rgba(201,168,76,0.3)", color: "#c9a84c" }}>
                 Selected: {selectedFile.name} ({selectedFile.size})
               </div>
             )}
-
             {featuredImage && (
               <div className="mb-3 rounded-lg overflow-hidden h-32">
                 {/* eslint-disable-next-line @next/next/no-img-element */}

@@ -1,14 +1,21 @@
 "use client";
 export const dynamic = "force-dynamic";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import nextDynamic from "next/dynamic";
+import { createBrowserClient } from "@/lib/supabase/client";
 import type { Category } from "@/lib/supabase/types";
 
 const TipTapEditor = nextDynamic(() => import("@/components/admin/TipTapEditor"), { ssr: false });
 
+const BUCKET = "post-images";
+const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/webp", "image/gif"];
+const MAX_SIZE = 5 * 1024 * 1024;
+
 export default function NewPostPage() {
   const router = useRouter();
+  const supabase = useMemo(() => createBrowserClient(), []);
+
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
   const [excerpt, setExcerpt] = useState("");
@@ -32,19 +39,31 @@ export default function NewPostPage() {
     setUploadError("");
     setSelectedFile({ name: file.name, size: (file.size / 1024).toFixed(1) + " KB" });
     setUploadingImage(true);
-    const formData = new FormData();
-    formData.append("file", file);
-    try {
-      const res = await fetch("/api/upload", { method: "POST", body: formData });
-      const data = await res.json();
-      if (res.ok) {
-        setFeaturedImage(data.url);
-        setSelectedFile(null);
-      } else {
-        setUploadError(data.error ?? `Upload failed (HTTP ${res.status})`);
-      }
-    } catch (err) {
-      setUploadError("Network error — could not reach upload endpoint. " + String(err));
+
+    if (!ALLOWED_TYPES.includes(file.type)) {
+      setUploadError("Invalid file type. Only JPEG, PNG, WebP, and GIF are allowed.");
+      setUploadingImage(false);
+      return;
+    }
+    if (file.size > MAX_SIZE) {
+      setUploadError("File too large. Maximum size is 5MB.");
+      setUploadingImage(false);
+      return;
+    }
+
+    const ext = file.name.split(".").pop() ?? "jpg";
+    const fileName = `${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+
+    const { error: uploadErr } = await supabase.storage
+      .from(BUCKET)
+      .upload(fileName, file, { contentType: file.type, upsert: false });
+
+    if (uploadErr) {
+      setUploadError(uploadErr.message);
+    } else {
+      const { data: { publicUrl } } = supabase.storage.from(BUCKET).getPublicUrl(fileName);
+      setFeaturedImage(publicUrl);
+      setSelectedFile(null);
     }
     setUploadingImage(false);
   };
@@ -99,22 +118,15 @@ export default function NewPostPage() {
       )}
 
       <div className="grid lg:grid-cols-3 gap-6">
-        {/* Main editor */}
         <div className="lg:col-span-2 space-y-4">
-          <input
-            type="text"
-            value={title}
-            onChange={e => setTitle(e.target.value)}
+          <input type="text" value={title} onChange={e => setTitle(e.target.value)}
             placeholder="Post title…"
             className="w-full px-4 py-3 rounded-xl text-xl font-bold font-serif outline-none"
-            style={inputStyle}
-          />
+            style={inputStyle} />
           <TipTapEditor content={content} onChange={setContent} />
         </div>
 
-        {/* Settings panel */}
         <div className="space-y-5">
-          {/* Status */}
           <div className="rounded-xl p-5" style={{ backgroundColor: "rgba(255,255,255,0.04)", border: "1px solid rgba(201,168,76,0.15)" }}>
             <h3 className="text-sm font-bold mb-3" style={{ color: "#c9a84c" }}>Status</h3>
             <select value={status} onChange={e => setStatus(e.target.value as "draft" | "published")}
@@ -124,7 +136,6 @@ export default function NewPostPage() {
             </select>
           </div>
 
-          {/* Category */}
           <div className="rounded-xl p-5" style={{ backgroundColor: "rgba(255,255,255,0.04)", border: "1px solid rgba(201,168,76,0.15)" }}>
             <h3 className="text-sm font-bold mb-3" style={{ color: "#c9a84c" }}>Category</h3>
             <select value={categoryId} onChange={e => setCategoryId(e.target.value)}
@@ -145,7 +156,6 @@ export default function NewPostPage() {
             )}
           </div>
 
-          {/* Excerpt */}
           <div className="rounded-xl p-5" style={{ backgroundColor: "rgba(255,255,255,0.04)", border: "1px solid rgba(201,168,76,0.15)" }}>
             <h3 className="text-sm font-bold mb-3" style={{ color: "#c9a84c" }}>Excerpt</h3>
             <textarea value={excerpt} onChange={e => setExcerpt(e.target.value)} rows={3}
@@ -153,24 +163,19 @@ export default function NewPostPage() {
               className="w-full px-3 py-2 rounded-lg text-sm outline-none resize-none" style={inputStyle} />
           </div>
 
-          {/* Featured Image */}
           <div className="rounded-xl p-5" style={{ backgroundColor: "rgba(255,255,255,0.04)", border: "1px solid rgba(201,168,76,0.15)" }}>
             <h3 className="text-sm font-bold mb-3" style={{ color: "#c9a84c" }}>Featured Image</h3>
 
-            {/* Upload error */}
             {uploadError && (
               <div className="mb-3 px-3 py-2 rounded-lg text-xs break-all" style={{ backgroundColor: "rgba(220,38,38,0.15)", border: "1px solid rgba(220,38,38,0.3)", color: "#fca5a5" }}>
                 ✗ {uploadError}
               </div>
             )}
-
-            {/* File selected indicator */}
             {selectedFile && !uploadingImage && (
               <div className="mb-3 px-3 py-2 rounded-lg text-xs" style={{ backgroundColor: "rgba(201,168,76,0.1)", border: "1px solid rgba(201,168,76,0.3)", color: "#c9a84c" }}>
                 Selected: {selectedFile.name} ({selectedFile.size})
               </div>
             )}
-
             {featuredImage && (
               <div className="mb-3 rounded-lg overflow-hidden h-32">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
