@@ -1,4 +1,5 @@
 export const dynamic = "force-dynamic";
+export const revalidate = 0;
 import { createServerClient } from "@/lib/supabase/server";
 import PostCard from "@/components/PostCard";
 import Link from "next/link";
