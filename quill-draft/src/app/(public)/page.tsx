@@ -153,20 +153,6 @@ export default async function HomePage() {
         </section>
       )}
 
-      {/* No posts fallback */}
-      {!featured && (
-        <section className="py-24 px-4 text-center">
-          <div className="max-w-lg mx-auto">
-            <div className="text-6xl mb-4">✒</div>
-            <h2 className="text-2xl font-bold font-serif mb-3" style={{ color: "var(--fg)" }}>Coming Soon</h2>
-            <p className="text-sm" style={{ color: "var(--muted)" }}>
-              Our editors are crafting the first articles. Check back soon — or{" "}
-              <Link href="/admin" style={{ color: "#c9a84c" }} className="underline">sign in to the admin</Link> to publish the first post.
-            </p>
-          </div>
-        </section>
-      )}
-
       {/* Newsletter CTA */}
       <section className="py-20 px-4" style={{ background: "linear-gradient(135deg, #1a1a2e 0%, #252542 100%)" }}>
         <div className="max-w-2xl mx-auto text-center">
