@@ -23,12 +23,30 @@ const jsonLd = {
 };
 
 export default async function HomePage() {
+  // Debug: confirm env vars are present
+  console.log("[HomePage] SUPABASE_URL set:", !!process.env.NEXT_PUBLIC_SUPABASE_URL);
+  console.log("[HomePage] SUPABASE_ANON_KEY set:", !!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY);
+
   const supabase = createServerClient();
-  const [{ data: posts }, { data: categories }, { data: settingsRows }] = await Promise.all([
-    supabase.from("posts").select("*, categories(id,name,slug,created_at)").eq("status", "published").order("created_at", { ascending: false }).limit(6),
+
+  const [
+    { data: posts, error: postsError },
+    { data: categories, error: categoriesError },
+    { data: settingsRows },
+  ] = await Promise.all([
+    supabase
+      .from("posts")
+      .select("*, categories(id,name,slug,created_at)")
+      .eq("status", "published")
+      .order("created_at", { ascending: false })
+      .limit(6),
     supabase.from("categories").select("*").order("name"),
     supabase.from("site_settings").select("*"),
   ]);
+
+  console.log("[HomePage] posts fetched:", posts?.length ?? 0);
+  if (postsError) console.error("[HomePage] posts error:", postsError.message);
+  if (categoriesError) console.error("[HomePage] categories error:", categoriesError.message);
 
   const settings: Record<string, string> = {};
   (settingsRows ?? []).forEach((row: { key: string; value: string }) => { settings[row.key] = row.value; });
@@ -99,7 +117,7 @@ export default async function HomePage() {
               <div>
                 {featured.categories && (
                   <span className="text-xs font-semibold px-3 py-1 rounded-full mb-4 inline-block" style={{ backgroundColor: "#c9a84c", color: "#1a1a2e" }}>
-                    {featured.categories!.name}
+                    {featured.categories.name}
                   </span>
                 )}
                 <h2 className="text-3xl md:text-4xl font-bold font-serif mb-4 leading-snug" style={{ color: "var(--fg)" }}>
@@ -174,9 +192,6 @@ export default async function HomePage() {
           <p className="text-xs mt-3" style={{ color: "rgba(245,240,232,0.4)" }}>No commitment. Unsubscribe anytime.</p>
         </div>
       </section>
-
-      {/* Ad zone — hidden until AdSense is activated */}
-      {/* <div className="ad-zone h-24 max-w-6xl mx-auto my-8 mx-4">[ Advertisement ]</div> */}
     </>
   );
 }

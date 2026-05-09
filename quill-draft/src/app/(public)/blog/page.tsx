@@ -12,29 +12,38 @@ export default async function BlogPage({
 }: {
   searchParams: { cat?: string; q?: string; page?: string };
 }) {
+  // Debug: confirm env vars are present
+  console.log("[BlogPage] SUPABASE_URL set:", !!process.env.NEXT_PUBLIC_SUPABASE_URL);
+  console.log("[BlogPage] SUPABASE_ANON_KEY set:", !!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY);
+
   const supabase = createServerClient();
   const page = Math.max(1, Number(searchParams.page) || 1);
   const catFilter = searchParams.cat ?? "";
   const query = searchParams.q ?? "";
 
-  const [{ data: categoriesData }, postsResult] = await Promise.all([
-    supabase.from("categories").select("*").order("name"),
-    (async () => {
-      let q = supabase
-        .from("posts")
-        .select("*, categories(id,name,slug,created_at)", { count: "exact" })
-        .eq("status", "published")
-        .order("created_at", { ascending: false })
-        .range((page - 1) * PAGE_SIZE, page * PAGE_SIZE - 1);
-      if (catFilter) q = q.eq("category_id", catFilter);
-      if (query) q = q.ilike("title", `%${query}%`);
-      return q;
-    })(),
-  ]);
+  const { data: categoriesData } = await supabase
+    .from("categories")
+    .select("*")
+    .order("name");
+
+  let q = supabase
+    .from("posts")
+    .select("*, categories(id,name,slug,created_at)", { count: "exact" })
+    .eq("status", "published")
+    .order("created_at", { ascending: false })
+    .range((page - 1) * PAGE_SIZE, page * PAGE_SIZE - 1);
+
+  if (catFilter) q = q.eq("category_id", catFilter);
+  if (query) q = q.ilike("title", `%${query}%`);
+
+  const { data, count, error: postsError } = await q;
+
+  console.log("[BlogPage] posts fetched:", data?.length ?? 0, "total:", count ?? 0);
+  if (postsError) console.error("[BlogPage] posts error:", postsError.message);
 
   const categories = (categoriesData ?? []) as Category[];
-  const posts = ((postsResult.data ?? []) as unknown) as PostFull[];
-  const total = postsResult.count ?? 0;
+  const posts = ((data ?? []) as unknown) as PostFull[];
+  const total = count ?? 0;
   const totalPages = Math.ceil(total / PAGE_SIZE);
 
   return (
