@@ -3,6 +3,9 @@ import { createAdminClient } from "@/lib/supabase/server";
 
 export async function POST(req: Request) {
   const supabase = createAdminClient();
+  const { searchParams } = new URL(req.url);
+  const bucket = searchParams.get("bucket") === "images" ? "images" : "post-images";
+
   const formData = await req.formData();
   const file = formData.get("file") as File | null;
 
@@ -24,11 +27,11 @@ export async function POST(req: Request) {
   const buffer = Buffer.from(arrayBuffer);
 
   const { error } = await supabase.storage
-    .from("post-images")
+    .from(bucket)
     .upload(fileName, buffer, { contentType: file.type, upsert: false });
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
 
-  const { data: { publicUrl } } = supabase.storage.from("post-images").getPublicUrl(fileName);
+  const { data: { publicUrl } } = supabase.storage.from(bucket).getPublicUrl(fileName);
   return NextResponse.json({ url: publicUrl });
 }
