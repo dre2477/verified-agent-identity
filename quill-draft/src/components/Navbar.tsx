@@ -16,7 +16,7 @@ const links = [
   { href: "/contact", label: "Contact" },
 ];
 
-export default function Navbar() {
+export default function Navbar({ logoUrl = "" }: { logoUrl?: string }) {
   const [open, setOpen] = useState(false);
   const { theme, toggle } = useTheme();
 
@@ -25,7 +25,10 @@ export default function Navbar() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
         {/* Logo */}
         <Link href="/" className="flex items-center gap-2">
-          <span className="text-2xl font-bold font-serif" style={{ color: "var(--gold)" }}>✒ The Quill Draft</span>
+          {logoUrl
+            ? /* eslint-disable-next-line @next/next/no-img-element */ <img src={logoUrl} alt="The Quill Draft" className="h-9 object-contain" />
+            : <span className="text-2xl font-bold font-serif" style={{ color: "var(--gold)" }}>✒ The Quill Draft</span>
+          }
         </Link>
 
         {/* Desktop Nav */}

@@ -8,6 +8,7 @@ const navItems = [
   { href: "/admin/posts", label: "Posts", icon: "✍" },
   { href: "/admin/posts/new", label: "New Post", icon: "+" },
   { href: "/admin/categories", label: "Categories", icon: "⊞" },
+  { href: "/admin/settings", label: "Settings", icon: "⚙" },
 ];
 
 export default function AdminNav() {

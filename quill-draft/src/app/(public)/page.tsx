@@ -24,22 +24,21 @@ const jsonLd = {
 
 export default async function HomePage() {
   const supabase = createServerClient();
-  const { data: posts } = await supabase
-    .from("posts")
-    .select("*, categories(id,name,slug,created_at)")
-    .eq("status", "published")
-    .order("created_at", { ascending: false })
-    .limit(6);
+  const [{ data: posts }, { data: categories }, { data: settingsRows }] = await Promise.all([
+    supabase.from("posts").select("*, categories(id,name,slug,created_at)").eq("status", "published").order("created_at", { ascending: false }).limit(6),
+    supabase.from("categories").select("*").order("name"),
+    supabase.from("site_settings").select("*"),
+  ]);
 
-  const { data: categories } = await supabase
-    .from("categories")
-    .select("*")
-    .order("name");
+  const settings: Record<string, string> = {};
+  (settingsRows ?? []).forEach((row: { key: string; value: string }) => { settings[row.key] = row.value; });
 
   const allPosts = (posts ?? []) as unknown as PostFull[];
   const allCategories = (categories ?? []) as unknown as Category[];
   const featured = allPosts[0] ?? null;
   const recent = allPosts.slice(1);
+  const heroImageUrl = settings.hero_image_url ?? "";
+  const siteTagline = settings.site_tagline || SITE_TAGLINE;
 
   return (
     <>
@@ -49,8 +48,13 @@ export default async function HomePage() {
       />
 
       {/* Hero */}
-      <section className="py-24 px-4" style={{ background: "linear-gradient(135deg, #1a1a2e 0%, #252542 100%)" }}>
-        <div className="max-w-4xl mx-auto text-center">
+      <section className="py-24 px-4 relative overflow-hidden"
+        style={heroImageUrl
+          ? { backgroundImage: `url(${heroImageUrl})`, backgroundSize: "cover", backgroundPosition: "center" }
+          : { background: "linear-gradient(135deg, #1a1a2e 0%, #252542 100%)" }
+        }>
+        {heroImageUrl && <div className="absolute inset-0" style={{ backgroundColor: "rgba(26,26,46,0.72)" }} />}
+        <div className="max-w-4xl mx-auto text-center relative z-10">
           <p className="text-sm font-semibold tracking-widest uppercase mb-4" style={{ color: "#c9a84c" }}>
             Editorial Blog
           </p>
@@ -58,7 +62,7 @@ export default async function HomePage() {
             {SITE_NAME}
           </h1>
           <p className="text-xl md:text-2xl mb-8 font-serif italic" style={{ color: "#c9a84c" }}>
-            {SITE_TAGLINE}
+            {siteTagline}
           </p>
           <p className="text-base max-w-xl mx-auto mb-10 leading-relaxed" style={{ color: "rgba(245,240,232,0.75)" }}>
             A home for thoughtful long-form writing. Dive into ideas that challenge, inspire, and stay with you long after you&apos;ve finished reading.
