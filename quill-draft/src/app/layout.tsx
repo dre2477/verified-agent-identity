@@ -17,6 +17,9 @@ export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   title: { default: `${SITE_NAME} — ${SITE_TAGLINE}`, template: `%s | ${SITE_NAME}` },
   description: `${SITE_NAME} — ${SITE_TAGLINE}. A premier editorial blog covering ideas, craft, and culture.`,
+  verification: {
+    google: "jVN8k_kfx9IVAv0kqD73nlSJlhqEbPCu5kOUGHMuNuU",
+  },
   openGraph: {
     type: "website",
     siteName: SITE_NAME,
