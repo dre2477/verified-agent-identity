@@ -37,7 +37,7 @@ export default function EditPostPage({ params }: { params: { id: string } }) {
 
   useEffect(() => {
     fetchPost();
-    fetch("/api/categories").then(r => r.json()).then(setCategories);
+    fetch("/api/categories").then(r => r.json()).then(data => { if (Array.isArray(data)) setCategories(data); });
   }, [fetchPost]);
 
   const handleImageUpload = async (file: File) => {
@@ -140,11 +140,20 @@ export default function EditPostPage({ params }: { params: { id: string } }) {
             <h3 className="text-sm font-bold mb-3" style={{ color: "#c9a84c" }}>Category</h3>
             <select value={categoryId} onChange={e => setCategoryId(e.target.value)}
               className="w-full px-3 py-2 rounded-lg text-sm outline-none" style={inputStyle}>
-              <option value="">Uncategorized</option>
-              {categories.map(cat => (
-                <option key={cat.id} value={cat.id}>{cat.name}</option>
-              ))}
+              <option value="">— Select a category —</option>
+              {categories.length === 0 ? (
+                <option disabled>No categories yet — create one first</option>
+              ) : (
+                categories.map(cat => (
+                  <option key={cat.id} value={cat.id}>{cat.name}</option>
+                ))
+              )}
             </select>
+            {categories.length === 0 && (
+              <p className="text-xs mt-1.5" style={{ color: "rgba(201,168,76,0.7)" }}>
+                Go to <a href="/admin/categories" className="underline hover:opacity-80">Categories</a> to create one first.
+              </p>
+            )}
           </div>
 
           <div className="rounded-xl p-5" style={{ backgroundColor: "rgba(255,255,255,0.04)", border: "1px solid rgba(201,168,76,0.15)" }}>

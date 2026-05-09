@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useMemo } from "react";
 import { createBrowserClient } from "@/lib/supabase/client";
 import PostCard from "@/components/PostCard";
 import type { Post, Category } from "@/lib/supabase/types";
@@ -7,7 +7,7 @@ import type { Post, Category } from "@/lib/supabase/types";
 const PAGE_SIZE = 9;
 
 export default function BlogPage() {
-  const supabase = createBrowserClient();
+  const supabase = useMemo(() => createBrowserClient(), []);
   const [posts, setPosts] = useState<Post[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [total, setTotal] = useState(0);
