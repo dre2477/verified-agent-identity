@@ -142,8 +142,8 @@ export default async function PostPage({ params }: Props) {
         </div>
       </article>
 
-      {/* Ad */}
-      <div className="ad-zone h-20 max-w-3xl mx-auto my-6 mx-4">[ Advertisement ]</div>
+      {/* Ad zone — hidden until AdSense is activated */}
+      {/* <div className="ad-zone h-20 max-w-3xl mx-auto my-6 mx-4">[ Advertisement ]</div> */}
 
       {/* Related posts */}
       {related && related.length > 0 && (

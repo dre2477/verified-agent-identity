@@ -136,8 +136,8 @@ export default function BlogPage() {
         </div>
       )}
 
-      {/* Ad zone */}
-      <div className="ad-zone h-20 mt-12">[ Advertisement ]</div>
+      {/* Ad zone — hidden until AdSense is activated */}
+      {/* <div className="ad-zone h-20 mt-12">[ Advertisement ]</div> */}
     </div>
   );
 }

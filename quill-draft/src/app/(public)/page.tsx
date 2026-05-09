@@ -185,8 +185,8 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* Ad zone */}
-      <div className="ad-zone h-24 max-w-6xl mx-auto my-8 mx-4">[ Advertisement ]</div>
+      {/* Ad zone — hidden until AdSense is activated */}
+      {/* <div className="ad-zone h-24 max-w-6xl mx-auto my-8 mx-4">[ Advertisement ]</div> */}
     </>
   );
 }
