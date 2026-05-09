@@ -19,6 +19,8 @@ export default function NewPostPage() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
   const [uploadingImage, setUploadingImage] = useState(false);
+  const [uploadError, setUploadError] = useState("");
+  const [selectedFile, setSelectedFile] = useState<{ name: string; size: string } | null>(null);
 
   useEffect(() => {
     fetch("/api/categories")
@@ -27,13 +29,22 @@ export default function NewPostPage() {
   }, []);
 
   const handleImageUpload = async (file: File) => {
+    setUploadError("");
+    setSelectedFile({ name: file.name, size: (file.size / 1024).toFixed(1) + " KB" });
     setUploadingImage(true);
     const formData = new FormData();
     formData.append("file", file);
-    const res = await fetch("/api/upload", { method: "POST", body: formData });
-    if (res.ok) {
-      const { url } = await res.json();
-      setFeaturedImage(url);
+    try {
+      const res = await fetch("/api/upload", { method: "POST", body: formData });
+      const data = await res.json();
+      if (res.ok) {
+        setFeaturedImage(data.url);
+        setSelectedFile(null);
+      } else {
+        setUploadError(data.error ?? `Upload failed (HTTP ${res.status})`);
+      }
+    } catch (err) {
+      setUploadError("Network error — could not reach upload endpoint. " + String(err));
     }
     setUploadingImage(false);
   };
@@ -145,6 +156,21 @@ export default function NewPostPage() {
           {/* Featured Image */}
           <div className="rounded-xl p-5" style={{ backgroundColor: "rgba(255,255,255,0.04)", border: "1px solid rgba(201,168,76,0.15)" }}>
             <h3 className="text-sm font-bold mb-3" style={{ color: "#c9a84c" }}>Featured Image</h3>
+
+            {/* Upload error */}
+            {uploadError && (
+              <div className="mb-3 px-3 py-2 rounded-lg text-xs break-all" style={{ backgroundColor: "rgba(220,38,38,0.15)", border: "1px solid rgba(220,38,38,0.3)", color: "#fca5a5" }}>
+                ✗ {uploadError}
+              </div>
+            )}
+
+            {/* File selected indicator */}
+            {selectedFile && !uploadingImage && (
+              <div className="mb-3 px-3 py-2 rounded-lg text-xs" style={{ backgroundColor: "rgba(201,168,76,0.1)", border: "1px solid rgba(201,168,76,0.3)", color: "#c9a84c" }}>
+                Selected: {selectedFile.name} ({selectedFile.size})
+              </div>
+            )}
+
             {featuredImage && (
               <div className="mb-3 rounded-lg overflow-hidden h-32">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -153,9 +179,9 @@ export default function NewPostPage() {
             )}
             <label className="block w-full text-center px-3 py-2.5 rounded-lg text-sm cursor-pointer transition-opacity hover:opacity-80"
               style={{ border: "1px dashed rgba(201,168,76,0.4)", color: "#c9a84c" }}>
-              {uploadingImage ? "Uploading…" : "Upload Image"}
+              {uploadingImage ? `Uploading ${selectedFile?.name ?? ""}…` : "Upload Image"}
               <input type="file" accept="image/*" className="hidden"
-                onChange={e => { const f = e.target.files?.[0]; if (f) handleImageUpload(f); }} />
+                onChange={e => { const f = e.target.files?.[0]; if (f) handleImageUpload(f); e.target.value = ""; }} />
             </label>
             <p className="text-xs mt-2" style={{ color: "rgba(245,240,232,0.3)" }}>Or paste URL:</p>
             <input type="url" value={featuredImage} onChange={e => setFeaturedImage(e.target.value)}
